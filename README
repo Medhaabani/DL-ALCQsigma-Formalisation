@@ -1,0 +1,45 @@
+TODO:
+
+* list of concepts, roles, indivuals
+
+Files marked with (+) are 
+
+
+ALC_Checker.thy: active, to be renamed. Validity-preserving transfos involving quantifiers.
++ALC_CompletenessProofs.thy: active. 
+ALC_Implementation.thy: inactive.
+ALC_ImplementationProofs.thy: active. Implements the trace management
+ALC_PrInfrastruc.thy: active. Implementation within Isabelle of the tableau calc, without proofs.
++ALC_SoundnessProofs.thy: active. 
++ALC_Tableau.thy: active. 
++ALC_TableauProofs.thy: active. Termination of ALC tableau calculus
+ALC_Termination.thy: active. 
+All.thy: active. includes all relevant files, for fast proof checking.
++Auxil.thy: active. Auxiliary notions
++AuxilProofs.thy: active. 
++Card.thy: active. Notions of cardinalities of sets.
++CardProofs.thy: active. 
+CodegenOcaml.thy: inactive. Code generation for Ocaml. 
+CodegenScala.thy: active. Code generation for Scala.
++Decide_satisfiability.thy: active. Saturated clash-free Abox is satisfiable.
+Fresh.thy: active. Imported from Isabelle mailing list.
++Hoare.thy: active. 
++HoareProofs.thy: active. 
+LogicTranslations.thy: part of stage Remy Cerda
++New_Var.thy: active. Generating new variable names
++NormalForm.thy: active. 
++NormalFormProofs.thy: active. 
+PredicateLogic.thy: part of stage Remy Cerda
++Proglang.thy: active. 
++ProglangProofs.thy: active. 
+ProofTrace.thy: inactive.
+ScottProofs.thy: part of stage Remy Cerda
+Select.thy: Proofs for executable version of select statement 
++Semantics.thy: active. Semantics of ALC.
++SemanticsProofs.thy: active. 
++Subst.thy: active. Substitutions.
++SubstProofs.thy: active. 
++Syntax.thy: active. Syntax of ALC.
++SyntaxProofs.thy: active. 
++Variables.thy: active. Treatment of variables.
++VariablesProofs.thy: active. 

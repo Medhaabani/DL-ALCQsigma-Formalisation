@@ -1,0 +1,156 @@
+theory ALC_SoundnessProofs imports ALC_TableauProofs
+begin
+
+
+lemma satisfiable_abox_satisfiable_neg_norm_abox :
+ "satisfiable_abox TYPE('d) ab \<Longrightarrow> satisfiable_abox TYPE('d) (neg_norm_abox ab)"
+by ( fastforce simp add: satisfiable_abox_def image_iff neg_norm_abox_def)
+
+lemma  satisfiable_neg_norm_abox_satisfiable_abox : 
+ "satisfiable_abox TYPE('d) (neg_norm_abox ab) \<Longrightarrow> satisfiable_abox TYPE('d) ab"
+by ( fastforce simp add: satisfiable_abox_def image_iff neg_norm_abox_def)
+
+lemma satisfiable_abox_satisfiable_neg_abox : 
+  "satisfiable_abox TYPE('d) ab = satisfiable_abox TYPE('d) (neg_norm_abox ab)"
+   apply (rule iffI)
+   apply (rule satisfiable_abox_satisfiable_neg_norm_abox)  apply assumption
+   apply (rule satisfiable_neg_norm_abox_satisfiable_abox) apply assumption
+done
+
+  (* sound means: no creation of models *)
+definition  sound :: "('nr, 'nc, 'ni) rule \<Rightarrow> bool"
+  where 
+  "sound r \<equiv> \<forall> A1 A2. r A1 A2 \<longrightarrow> satisfiable_abox TYPE('d) A2 \<longrightarrow> satisfiable_abox TYPE('d) A1"
+
+
+definition soundness_pres_weakening :: "('nr,'nc,'ni) rule \<Rightarrow> ('nr,'nc,'ni) rule \<Rightarrow> bool" where
+"soundness_pres_weakening r r_weak = 
+  (\<forall> ab. (Collect (r ab) \<subseteq> Collect (r_weak ab)))"
+
+lemma sound_weaken: "sound TYPE('d) r_weak
+\<Longrightarrow> soundness_pres_weakening r r_weak 
+\<Longrightarrow> sound TYPE('d) r"
+by (fastforce simp add: sound_def soundness_pres_weakening_def)
+
+lemma sound_ex_rule_closure [rule_format, simp]: 
+"(\<forall> f. sound TYPE('d) (ir f)) \<Longrightarrow> sound TYPE('d) (ex_rule_closure ir)"
+by (fastforce simp add: sound_def ex_rule_closure_def)
+
+
+  (* ----------------------------------------------------------------------  *)
+  (* Rule combinators *)
+
+lemma empty_rule_sound [simp]: 
+  "sound TYPE('d) empty_rule"
+  by (fastforce  simp add: sound_def)
+
+lemma alternative_rule_sound [simp]:
+  "sound TYPE('d) (alternative_rule r1 r2) = (sound TYPE('d) r1 \<and> sound TYPE('d) r2)"
+  by (fastforce  simp add: sound_def)
+
+lemma alternative_rule_list_sound [simp]: 
+  "(sound TYPE('d) (alternative_rule_list rs)) = (list_all (sound TYPE('d)) rs)"
+  by (induct rs) (clarsimp simp del: empty_rule.simps alternative_rule.simps)+
+
+lemma relcompp_rule_sound [simp]: 
+"sound TYPE('d) r1 \<Longrightarrow> sound TYPE('d) r2 \<Longrightarrow> sound TYPE('d) (r1 OO r2)"
+by (fastforce simp add: sound_def relcompp.simps)
+
+lemma rtranclp_rule_sound_for_induct: 
+  "r\<^sup>*\<^sup>* A1 A2 \<Longrightarrow>
+    satisfiable_abox TYPE('d) A2 \<longrightarrow>
+    (\<forall>A1 A2. r A1 A2 \<longrightarrow> satisfiable_abox TYPE('d) A2 \<longrightarrow> satisfiable_abox TYPE('d) A1) \<longrightarrow> satisfiable_abox TYPE('d) A1"
+  by (induct rule: rtranclp.induct) auto
+
+lemma rtranclp_rule_sound [simp]: "sound TYPE('d) r \<Longrightarrow> sound TYPE('d) r\<^sup>*\<^sup>*"
+  by (clarsimp simp add: sound_def rtranclp_rule_sound_for_induct)
+
+lemma tranclp_rule_sound_for_induct:
+  "r\<^sup>+\<^sup>+ A1 A2 \<Longrightarrow>
+    satisfiable_abox TYPE('d) A2 \<longrightarrow>
+    (\<forall>A1 A2. r A1 A2 \<longrightarrow> satisfiable_abox TYPE('d) A2 \<longrightarrow> satisfiable_abox TYPE('d) A1) \<longrightarrow> satisfiable_abox TYPE('d) A1"
+  by (induct rule: tranclp.induct) auto
+
+lemma tranclp_rule_sound [simp]: "sound TYPE('d) r \<Longrightarrow> sound TYPE('d) r\<^sup>+\<^sup>+"
+  by (clarsimp simp add: sound_def tranclp_rule_sound_for_induct)
+
+
+  (*----------------------------------------------------------------------------------------*)
+  (* Properties of specific rules *)
+  
+lemma conjc_rule_indiv_sound [simp, intro]: "sound TYPE('d) (conjc_rule_indiv f)"
+  by (fastforce elim: conjc_rule_indiv_cases simp add: sound_def satisfiable_abox_def)
+
+lemma disjc_rule_indiv_sound [simp]: "sound TYPE('d) (disjc_rule_indiv f)"
+  by (fastforce elim: disjc_rule_indiv_cases simp add: sound_def satisfiable_abox_def)
+
+lemma allc_rule_indiv_sound [simp]: "sound TYPE('d) (allc_rule_indiv f)"
+  by (fastforce elim: allc_rule_indiv_cases simp add: sound_def satisfiable_abox_def)
+
+lemma somec_rule_indiv_sound [simp]: "sound TYPE('d) (somec_rule_indiv (z, f))"
+  by (fastforce elim: somec_rule_indiv_cases  simp add: sound_def satisfiable_abox_def)
+
+lemma substc_rule_indiv_sound [simp]: "sound TYPE('d) (substc_rule_indiv f)"
+  by (fastforce elim: substc_rule_indiv_cases simp add: sound_def satisfiable_abox_def)
+
+lemma substfm_rule_indiv_sound [simp]: "sound TYPE('d) (substfm_rule_indiv f)"
+  by (fastforce elim: substfm_rule_indiv_cases simp add: sound_def satisfiable_abox_def)
+
+lemma eq_rule_indiv_sound [simp]: "sound TYPE('d) (eq_rule_indiv f)"
+  by (fastforce elim: eq_rule_indiv_cases simp add: sound_def satisfiable_abox_def interp_form_push_isubst_form)
+
+lemma conjfm_rule_indiv_sound [simp]: "sound TYPE('d) (conjfm_rule_indiv f)"
+  by (fastforce elim: conjfm_rule_indiv_cases simp add: sound_def satisfiable_abox_def)
+
+lemma disjfm_rule_indiv_sound [simp]: "sound TYPE('d) (disjfm_rule_indiv f)"
+  by (fastforce elim: disjfm_rule_indiv_cases  simp add: sound_def satisfiable_abox_def)
+
+lemma choose_rule_indiv_sound [simp]: "sound TYPE('d) (choose_rule_indiv f)"
+  by (fastforce elim: choose_rule_indiv_cases simp add: sound_def satisfiable_abox_def)
+
+lemma  numrestrc_ge_rule_indiv_sound [simp]: "sound TYPE('d) (numrestrc_ge_rule_indiv f)"
+  by (fastforce elim:  numrestrc_ge_rule_indiv_cases  simp add: sound_def satisfiable_abox_def)
+
+lemma numrestrc_lt_1_rule_indiv_sound [simp]: "sound TYPE('d) (numrestrc_lt_1_rule_indiv f)"
+  by (fastforce elim:  numrestrc_lt_1_rule_indiv_cases  simp add: sound_def satisfiable_abox_def)
+
+lemma numrestrc_lt_rule_indiv_sound [simp]: "sound TYPE('d) (numrestrc_lt_rule_indiv (S, f))"
+  by (fastforce elim:  numrestrc_lt_rule_indiv_cases  simp add: sound_def satisfiable_abox_def)
+
+<<<<<<< local
+
+lemma somec_rule_sound [simp]: "sound somec_rule"
+=======
+  (*
+lemma atmost_rule_sound [simp]: "sound  (atmost_rule)"
+  apply (clarsimp simp only: sound_def satisfiable_abox_def atmost_rule.simps  atmost_applicable.simps) 
+  apply (clarsimp simp del: R_succ_eq.simps )
+  apply (subgoal_tac "card (R_succ_eq r c ab x) \<ge> 2")
+ apply (drule tt2)
+ apply (fastforce simp del: R_succ_eq.simps )
+ apply arith
+done
+*)
+lemma somec_rule_sound [simp]: "sound TYPE('d) somec_rule"
+>>>>>>> other
+apply (simp add: somec_rule_def)
+apply (rule sound_ex_rule_closure)
+apply (case_tac f)
+apply simp
+done
+
+lemma numrestrc_lt_rule_sound [simp]: "sound TYPE('d) numrestrc_lt_rule"
+apply (simp add: numrestrc_lt_rule_def)
+apply (rule sound_ex_rule_closure)
+apply (case_tac f)
+apply simp
+done
+
+lemma alc_rule_sound [simp]: "sound TYPE('d) alc_rule"
+  by (simp add: alc_rule_def list_alc_rules_def del: alternative_rule_list.simps)
+     (simp add: conjc_rule_def disjc_rule_def allc_rule_def substc_rule_def eq_rule_def
+     conjfm_rule_def disjfm_rule_def choose_rule_def substfm_rule_def 
+     numrestrc_ge_rule_def numrestrc_lt_1_rule_def)
+
+end
+
